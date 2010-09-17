@@ -95,24 +95,24 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
         n = snd_pcm_writei(mHandle->handle,
                            (char *)buffer + sent,
                            snd_pcm_bytes_to_frames(mHandle->handle, bytes - sent));
-        if (n == -EBADFD) {
+        if (n < 0) {//== -EBADFD) {
             // Somehow the stream is in a bad state. The driver probably
             // has a bug and snd_pcm_recover() doesn't seem to handle this.
             mHandle->module->open(mHandle, mHandle->curDev, mHandle->curMode);
 
             if (aDev && aDev->recover) aDev->recover(aDev, n);
         }
-        else if (n < 0) {
-            if (mHandle->handle) {
+//        else if (n < 0) {
+//            if (mHandle->handle) {
                 // snd_pcm_recover() will return 0 if successful in recovering from
                 // an error, or -errno if the error was unrecoverable.
-                n = snd_pcm_recover(mHandle->handle, n, 1);
+//                n = snd_pcm_recover(mHandle->handle, n, 1);
 
-                if (aDev && aDev->recover) aDev->recover(aDev, n);
+//                if (aDev && aDev->recover) aDev->recover(aDev, n);
 
-                if (n) return static_cast<ssize_t>(n);
-            }
-        }
+//                if (n) return static_cast<ssize_t>(n);
+//            }
+//        }
         else {
             mFrameCount += n;
             sent += static_cast<ssize_t>(snd_pcm_frames_to_bytes(mHandle->handle, n));
@@ -157,6 +157,10 @@ status_t AudioStreamOutALSA::standby()
     snd_pcm_drain (mHandle->handle);
 
     if (mPowerLock) {
+	ALSAControl *ac=new ALSAControl();
+	ac->set("Idle Mode",1,0);
+	delete ac;
+
         release_wake_lock ("AudioOutLock");
         mPowerLock = false;
     }
