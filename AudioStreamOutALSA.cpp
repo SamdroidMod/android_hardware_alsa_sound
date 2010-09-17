@@ -73,6 +73,9 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
     AutoMutex lock(mLock);
 
     if (!mPowerLock) {
+		ALSAControl *ac=new ALSAControl();
+		ac->set("Idle Mode",0,0);
+		delete ac;
         acquire_wake_lock (PARTIAL_WAKE_LOCK, "AudioOutLock");
         mPowerLock = true;
     }
