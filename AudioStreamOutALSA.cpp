@@ -120,6 +120,7 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
         }
 
     } while (mHandle->handle && sent < bytes);
+	else LOGE("Handle does not exist");
 
     return sent;
 }

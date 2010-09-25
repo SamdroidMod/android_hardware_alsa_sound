@@ -150,11 +150,12 @@ status_t AudioHardwareALSA::setMode(int mode)
         if (status == NO_ERROR) {
             // take care of mode change.
             for(ALSAHandleList::iterator it = mDeviceList.begin();
-                it != mDeviceList.end(); ++it) {
+                it != mDeviceList.end(); ++it)
+                if(it->curDev){
                 status = mALSADevice->route(&(*it), it->curDev, mode);
                 if (status != NO_ERROR)
                     break;
-            }
+                }
         }
     }
 
