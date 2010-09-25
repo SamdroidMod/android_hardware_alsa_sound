@@ -90,7 +90,8 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
     snd_pcm_sframes_t n;
     size_t            sent = 0;
     status_t          err;
-
+	
+	if(mHandle && mHandle->handle)
     do {
         n = snd_pcm_writei(mHandle->handle,
                            (char *)buffer + sent,
