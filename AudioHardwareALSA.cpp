@@ -224,6 +224,8 @@ AudioHardwareALSA::openInputStream(uint32_t devices,
     for(ALSAHandleList::iterator it = mDeviceList.begin();
         it != mDeviceList.end(); ++it)
         if (it->devices & devices) {
+            //it->channels = *channels;
+            it->sampleRate = *sampleRate;
             err = mALSADevice->open(&(*it), devices, mode());
             if (err) break;
             in = new AudioStreamInALSA(this, &(*it), acoustics);
@@ -260,6 +262,16 @@ status_t AudioHardwareALSA::getMicMute(bool *state)
 status_t AudioHardwareALSA::dump(int fd, const Vector<String16>& args)
 {
     return NO_ERROR;
+}
+
+size_t AudioHardwareALSA::getInputBufferSize(uint32_t sampleRate, int format, int channels)
+{
+    if (format != AudioSystem::PCM_16_BIT) {
+        LOGW("getInputBufferSize bad format: %d", format);
+        return 0;
+    }
+
+    return 4096;    
 }
 
 }       // namespace android
