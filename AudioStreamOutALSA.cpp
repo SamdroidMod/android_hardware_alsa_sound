@@ -121,7 +121,7 @@ ssize_t AudioStreamOutALSA::write(const void *buffer, size_t bytes)
         }
 
     } while (mHandle->handle && sent < bytes);
-	else LOGE("Handle does not exist");
+    else LOGE("Cannot write data when routing is processed");
 
     return sent;
 }
@@ -142,8 +142,13 @@ status_t AudioStreamOutALSA::close()
 {
     AutoMutex lock(mLock);
 
-    snd_pcm_drain (mHandle->handle);
-    ALSAStreamOps::close();
+    if(mHandle && mHandle->handle){
+	snd_pcm_drain (mHandle->handle);
+	ALSAStreamOps::close();
+    }else{
+        LOGE("Trying to close null handle!");
+        return -1;
+    }
 
     if (mPowerLock) {
         release_wake_lock ("AudioOutLock");
@@ -157,7 +162,12 @@ status_t AudioStreamOutALSA::standby()
 {
     AutoMutex lock(mLock);
 
-    snd_pcm_drain (mHandle->handle);
+    if(mHandle && mHandle->handle)
+	snd_pcm_drain (mHandle->handle);
+    else{
+	LOGE("Trying to standby null handle!");
+	return -1;
+    }
 
     if (mPowerLock) {
 	ALSAControl *ac=new ALSAControl();
