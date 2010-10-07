@@ -165,6 +165,18 @@ status_t AudioHardwareALSA::setMode(int mode)
     return status;
 }
 
+// use emulated popcount optimization
+// http://www.df.lth.se/~john_e/gems/gem002d.html
+static inline uint32_t popCount(uint32_t u)
+{
+    u = ((u&0x55555555) + ((u>>1)&0x55555555));
+    u = ((u&0x33333333) + ((u>>2)&0x33333333));
+    u = ((u&0x0f0f0f0f) + ((u>>4)&0x0f0f0f0f));
+    u = ((u&0x00ff00ff) + ((u>>8)&0x00ff00ff));
+    u = ( u&0x0000ffff) + (u>>16);
+    return u;
+}
+
 AudioStreamOut *
 AudioHardwareALSA::openOutputStream(uint32_t devices,
                                     int *format,
@@ -214,7 +226,9 @@ AudioHardwareALSA::openInputStream(uint32_t devices,
 {
     status_t err = BAD_VALUE;
     AudioStreamInALSA *in = 0;
-
+    
+    LOGD("openInputStream called for devices: 0x%08x", devices);
+    
     if (devices & (devices - 1)) {
         if (status) *status = err;
         return in;
@@ -224,8 +238,9 @@ AudioHardwareALSA::openInputStream(uint32_t devices,
     for(ALSAHandleList::iterator it = mDeviceList.begin();
         it != mDeviceList.end(); ++it)
         if (it->devices & devices) {
-            //it->channels = *channels;
+            it->channels = popCount(*channels);
             it->sampleRate = *sampleRate;
+            it->bufferSize = 0.256*it->sampleRate*it->channels;
             err = mALSADevice->open(&(*it), devices, mode());
             if (err) break;
             in = new AudioStreamInALSA(this, &(*it), acoustics);
@@ -270,8 +285,9 @@ size_t AudioHardwareALSA::getInputBufferSize(uint32_t sampleRate, int format, in
         LOGW("getInputBufferSize bad format: %d", format);
         return 0;
     }
-
-    return 4096;    
+    int buffer = 0.256*sampleRate*channels;
+    LOGD("getInputBufferSize = %d",buffer);    
+    return buffer;
 }
 
 }       // namespace android
