@@ -129,10 +129,19 @@ status_t AudioHardwareALSA::initCheck()
 status_t AudioHardwareALSA::setVoiceVolume(float volume)
 {
     // The voice volume is used by the VOICE_CALL audio stream.
-    if (mMixer)
-        return mMixer->setVolume(AudioSystem::DEVICE_OUT_EARPIECE, volume, volume);
+    if (mMixer){
+        //vflashbirdv: fix the headset voice call volume adjust of i5700.
+        uint32_t curDevice = AudioSystem::DEVICE_OUT_EARPIECE;
+        for(ALSAHandleList::iterator it = mDeviceList.begin(); it != mDeviceList.end(); ++it)
+        if (it->curDev) {
+            curDevice = it->curDev;
+            break;
+        }
+        
+        return mMixer->setVolume(curDevice, volume, volume);
+    }
     else
-        return INVALID_OPERATION;
+    return INVALID_OPERATION;
 }
 
 status_t AudioHardwareALSA::setMasterVolume(float volume)

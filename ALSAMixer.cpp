@@ -65,17 +65,17 @@ struct alsa_properties_t
 
 static alsa_properties_t
 mixerMasterProp[SND_PCM_STREAM_LAST+1] =
-        ALSA_PROP(AudioSystem::DEVICE_OUT_ALL, "master", "PCM", "Capture");
+        ALSA_PROP(AudioSystem::DEVICE_OUT_ALL, "master", "Output Volume - SPK/EAR", "Capture");
 
 static alsa_properties_t
 mixerProp[][SND_PCM_STREAM_LAST+1] = {
-    ALSA_PROP(AudioSystem::DEVICE_OUT_EARPIECE, "earpiece", "Earpiece", "Capture"),
-    ALSA_PROP(AudioSystem::DEVICE_OUT_SPEAKER, "speaker", "Speaker",  ""),
-    ALSA_PROP(AudioSystem::DEVICE_OUT_WIRED_HEADSET, "headset", "Headphone", "Capture"),
-    ALSA_PROP(AudioSystem::DEVICE_OUT_BLUETOOTH_SCO, "bluetooth.sco", "Bluetooth", "Bluetooth Capture"),
-    ALSA_PROP(AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP, "bluetooth.a2dp", "Bluetooth A2DP", "Bluetooth A2DP Capture"),
+    ALSA_PROP(AudioSystem::DEVICE_OUT_EARPIECE, "earpiece", "Output Volume - RCV", "Capture"),
+    ALSA_PROP(AudioSystem::DEVICE_OUT_SPEAKER, "speaker", "Output Volume - SPK/EAR",  "Capture"),
+    ALSA_PROP(AudioSystem::DEVICE_OUT_WIRED_HEADSET, "headset", "Output Volume - SPK/EAR", "Capture"),
+    ALSA_PROP(AudioSystem::DEVICE_OUT_BLUETOOTH_SCO, "bluetooth.sco", "Output Volume - SPK/EAR", "Capture"),
+    ALSA_PROP(AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP, "bluetooth.a2dp", "Output Volume - SPK/EAR", "Capture"),
     ALSA_PROP(static_cast<AudioSystem::audio_devices>(0), "", NULL, NULL)
-};
+}; // input devices not added to this?? and what should be added for "Capture"??
 
 struct mixer_info_t
 {
@@ -327,6 +327,7 @@ status_t ALSAMixer::setVolume(uint32_t device, float left, float right)
 
 status_t ALSAMixer::setGain(uint32_t device, float gain)
 {
+    LOGD("setGain() device=%d",device);
     for (int j = 0; mixerProp[j][SND_PCM_STREAM_CAPTURE].device; j++)
         if (mixerProp[j][SND_PCM_STREAM_CAPTURE].device & device) {
 

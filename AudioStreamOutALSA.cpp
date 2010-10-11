@@ -170,10 +170,6 @@ status_t AudioStreamOutALSA::standby()
     }
 
     if (mPowerLock) {
-	ALSAControl *ac=new ALSAControl();
-	ac->set("Idle Mode",1,0);
-	delete ac;
-
         release_wake_lock ("AudioOutLock");
         mPowerLock = false;
     }
